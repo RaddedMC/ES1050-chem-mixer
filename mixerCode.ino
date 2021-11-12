@@ -15,6 +15,10 @@
 #define pressureRange 0.5
 // in psi
 
+#define baselinePointsCount 5
+
+double baseline = 0;
+
 
 // Adjust this to change what happens when you turn on and off the valve
 void setValveState(bool state) {
@@ -25,6 +29,19 @@ void setValveState(bool state) {
     digitalWrite(valvePin, LOW);
     digitalWrite(LED_BUILTIN, LOW);
   }
+}
+
+// Grabs the average ambient pressure 
+double calibrateBaseline() {
+  double pressureBaseline = 0;
+  for (int i = 0; i < baselinePointsCount; i++) {
+    double pressure = getPressure(false);
+    pressureBaseline += pressure;
+    Serial.print("Pressure: "); Serial.println(pressure);
+  }
+  pressureBaseline /= baselinePointsCount;
+  Serial.print("Baseline pressure is "); Serial.print(pressureBaseline); Serial.println(" PSI.");
+  return pressureBaseline;
 }
 
 void setup() {
@@ -54,7 +71,11 @@ void setup() {
   Serial.print(pressureRange);
   Serial.println(" psi.");
   delay(2000);
-  Serial.print("~~~ BEGIN!!! ~~~");
+
+  // Calibrate baseline
+  baseline = calibrateBaseline();
+  
+  Serial.println("~~~ BEGIN!!! ~~~");
 }
 
 // Uses millis() to get what the current pressure should be
@@ -68,13 +89,13 @@ double getIntendedPressure() {
 }
 
 // Grabs and returns the current pressure value
-double getPressure() {
+double getPressure(boolean pressureAdjusted) {
   // 0.5 volts = 0 psi
   // 4.5 volts = 30 psi
   int digitalValue = analogRead(sensorPin);
   double volts = 5.0 * (digitalValue / 255.0);
   double pressure = 30.0 * (volts / 4.0);
-  return pressure;
+  return pressureAdjusted ? pressure - baseline : pressure;
 }
 
 // Should we open the valve?
@@ -93,7 +114,7 @@ void loop() {
   Serial.println(millis()/1000.0);
 
   // Check current pressure
-  double pressure = getPressure();
+  double pressure = getPressure(true);
     Serial.print("PRESSURE:               ");
   Serial.print(pressure);
   Serial.println(" PSI");
