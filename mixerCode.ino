@@ -5,7 +5,7 @@
 // TODO: Baseline pressure
 // TODO: Live graphing
 
-#define sensorPin A0
+#define sensorPin A5
 #define valvePin 8
 
 // ADJUST THESE TO CHANGE REACTION CONTROL BEHAVIOUR//
@@ -18,7 +18,7 @@
 #define baselinePointsCount 5
 
 double baseline = 0;
-
+double timeoffset = -4.0;
 
 // Adjust this to change what happens when you turn on and off the valve
 void setValveState(bool state) {
@@ -82,7 +82,7 @@ void setup() {
 double getIntendedPressure() {
   // 4 psi per minute = 4/60 psi per second
   double pressureRateSeconds = pressureRate / 60.0;
-  double time = millis() / 1000.0; // convert to seconds
+  double time = (millis()+(timeoffset*1000.0)) / 1000.0; // convert to seconds
   // linear growth -- y = mx+b
   double intendedPressure = pressureRateSeconds * time;
   return intendedPressure;

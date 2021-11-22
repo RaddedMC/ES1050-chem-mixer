@@ -46,4 +46,4 @@ def parsePlot(arduino):
     return plot
 
 def findTheFloat(s):
-    return float(float(re.findall(r"[-+]?\d*\.\d+|\d+", s)[0]))
+    return float(float(re.findall(r"[-+]?\d*\.\d+|\d+", s)[0]))  #TODO: IndexError
